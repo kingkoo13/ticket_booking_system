@@ -509,6 +509,26 @@ def get_vendor_analytics(vendor_id: int, db: Session = Depends(get_db)):
     }
 
 
+@app.get("/api/admin/events", response_model=List[schemas.EventResponse])
+def get_events(db: Session = Depends(get_db)):
+    return db.query(models.Event).order_by(models.Event.event_id).all()
+
+
+@app.post("/api/admin/events", response_model=schemas.EventResponse)
+def create_event(payload: schemas.CreateEventRequest, db: Session = Depends(get_db)):
+    event = models.Event(
+        title=payload.title,
+        description=payload.description,
+        duration_minutes=payload.duration_minutes,
+        genre=payload.genre,
+        event_type=payload.event_type
+    )
+    db.add(event)
+    db.commit()
+    db.refresh(event)
+    return event
+
+
 @app.post("/api/admin/shows", response_model=schemas.ShowResponse)
 def create_show(payload: schemas.CreateShowRequest, db: Session = Depends(get_db)):
     event = db.query(models.Event).filter(models.Event.event_id == payload.event_id).first()

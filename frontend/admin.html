@@ -87,6 +87,41 @@
         <div class="workspace-grid">
             <!-- Left Panel: Create Show & Coupons -->
             <div class="workspace-panel-left">
+                <!-- Create Event Asset -->
+                <div class="admin-form-card">
+                    <h3><i class="fa-solid fa-square-plus"></i> Create New Event Asset</h3>
+                    <form id="eventForm">
+                        <div class="form-group">
+                            <label for="eventTitle">Event Title</label>
+                            <input type="text" id="eventTitle" placeholder="e.g. Inception 2" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventDescription">Description</label>
+                            <input type="text" id="eventDescription" placeholder="Brief tagline or description">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="eventDuration">Duration (minutes)</label>
+                                <input type="number" min="1" id="eventDuration" placeholder="e.g. 120" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="eventGenre">Genre</label>
+                                <input type="text" id="eventGenre" placeholder="e.g. Sci-Fi / Action" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventType">Event Type</label>
+                            <select id="eventType" required>
+                                <option value="Movie">Movie (Cinema Grid)</option>
+                                <option value="Concert">Concert (Balcony/Pit Zonal)</option>
+                                <option value="Stand-up">Stand-up (Comedy Club)</option>
+                                <option value="Alternative">Alternative (Stadium Sectors)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="submit-form-btn">Create Event Asset</button>
+                    </form>
+                </div>
+
                 <!-- Show Scheduler -->
                 <div class="admin-form-card">
                     <h3><i class="fa-regular fa-calendar-plus"></i> Schedule New Show</h3>
@@ -266,6 +301,7 @@
         const couponUsageTable = document.getElementById("couponUsageTable").getElementsByTagName("tbody")[0];
 
         // Forms
+        const eventForm = document.getElementById("eventForm");
         const schedulerForm = document.getElementById("schedulerForm");
         const couponForm = document.getElementById("couponForm");
 
@@ -300,23 +336,14 @@
         // Load Events for scheduling
         async function loadEvents() {
             try {
-                const res = await fetch("/api/shows"); // grabs shows metadata but we need events. Let's make an event list or fetch /api/shows
-                // We'll read from shows payload to map unique events, or query database events. 
-                // Since we can just list from shows or standard endpoint.
-                // Wait! Let's fetch all shows and map unique events, since we don't have a direct /api/events. 
-                // But wait! main.py has: api shows listing with event_id, event_title.
-                const resShows = await fetch("/api/shows");
-                const shows = await resShows.json();
-                const uniqueEvents = {};
-                shows.forEach(s => {
-                    uniqueEvents[s.event_id] = { id: s.event_id, title: s.event_title };
-                });
+                const res = await fetch("/api/admin/events");
+                const events = await res.json();
                 
                 eventSelect.innerHTML = "";
-                Object.values(uniqueEvents).forEach(evt => {
+                events.forEach(evt => {
                     const opt = document.createElement("option");
-                    opt.value = evt.id;
-                    opt.textContent = evt.title;
+                    opt.value = evt.event_id;
+                    opt.textContent = `${evt.title} (${evt.event_type})`;
                     eventSelect.appendChild(opt);
                 });
             } catch (err) {
@@ -722,6 +749,41 @@
             // Block / Release override clicks
             blockSeatsBtn.addEventListener("click", () => applyOverride("Booked"));
             releaseSeatsBtn.addEventListener("click", () => applyOverride("Available"));
+
+            // Create Event Asset Submit Form
+            eventForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                
+                const payload = {
+                    title: document.getElementById("eventTitle").value.trim(),
+                    description: document.getElementById("eventDescription").value.trim() || null,
+                    duration_minutes: parseInt(document.getElementById("eventDuration").value),
+                    genre: document.getElementById("eventGenre").value.trim() || null,
+                    event_type: document.getElementById("eventType").value
+                };
+
+                try {
+                    const res = await fetch("/api/admin/events", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.ok) {
+                        showToast("Event Asset successfully created!", "success");
+                        eventForm.reset();
+                        // Refresh event dropdown list
+                        await loadEvents();
+                    } else {
+                        const err = await res.json();
+                        showToast(err.detail || "Failed to create event asset.", "error");
+                    }
+                } catch (err) {
+                    showToast("Server error creating event asset.", "error");
+                }
+            });
 
             // Schedule Show Submit Form
             schedulerForm.addEventListener("submit", async (e) => {

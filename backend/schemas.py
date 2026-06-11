@@ -183,3 +183,12 @@ class VendorAnalyticsResponse(BaseModel):
     total_revenue: Decimal
     occupancy_rate: float
     coupon_usage: List[CouponUsageDetail] = []
+
+
+class CreateEventRequest(BaseModel):
+    title: str
+    description: Optional[str] = None
+    duration_minutes: int
+    genre: Optional[str] = None
+    event_type: str  # 'Movie', 'Concert', 'Stand-up', 'Alternative'
+
