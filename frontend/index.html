@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookMyShow - Movie Tickets, Plays, Sports & Event Tickets</title>
+    <meta name="description" content="Book tickets online for movies, concerts, stand-up comedy, and sports events. Real-time seat layouts, offers, and instant seat confirmation.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+    <!-- TOP HEADER -->
+    <header class="bms-main-header">
+        <div class="header-container">
+            <div class="header-left">
+                <!-- BMS Signature Logo -->
+                <div class="bms-logo" id="headerLogo">
+                    <span class="logo-book">book</span><span class="logo-my">my</span><span class="logo-show">show</span>
+                </div>
+                <div class="search-bar-wrapper">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities" id="searchInput">
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="location-selector">
+                    <span id="currentLocation">Mumbai</span>
+                    <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+                </div>
+                <!-- User Switcher Simulator -->
+                <div class="user-simulator-wrapper">
+                    <label for="userSelect"><i class="fa-solid fa-user-circle"></i> Active User:</label>
+                    <select id="userSelect" class="simulator-select">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <button class="reset-db-btn" id="resetDbBtn" title="Reset Database Mock Data">
+                    <i class="fa-solid fa-rotate-right"></i> Reset DB
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- SUB HEADER / NAVIGATION -->
+    <nav class="bms-sub-nav">
+        <div class="nav-container">
+            <div class="nav-links-left">
+                <a href="#" class="nav-link active">Movies</a>
+                <a href="#" class="nav-link">Stream</a>
+                <a href="#" class="nav-link">Events</a>
+                <a href="#" class="nav-link">Plays</a>
+                <a href="#" class="nav-link">Sports</a>
+                <a href="#" class="nav-link">Activities</a>
+                <a href="#" class="nav-link">Buzz</a>
+            </div>
+            <div class="nav-links-right">
+                <a href="#" class="nav-link-sub">ListYourShow</a>
+                <a href="#" class="nav-link-sub">Corporates</a>
+                <a href="#" class="nav-link-sub">Offers</a>
+                <a href="#" class="nav-link-sub">Gift Cards</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN INTERACTIVE WORKSPACE -->
+    <main class="booking-layout-main">
+        <!-- SHOW SELECTOR DASHBOARD -->
+        <section class="shows-selector-section">
+            <h1 class="page-title" id="mainTitle">Live Real-Time Show Bookings</h1>
+            <p class="subtitle">Select a show to view dynamic layouts and buy tickets. Open in multiple windows to see instant WebSocket updates!</p>
+            
+            <div class="show-cards-grid" id="showsGrid">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- SEAT BOOKING WORKSPACE -->
+        <section class="seat-booking-workspace-section hidden" id="bookingWorkspace">
+            <!-- Active Show Header Details -->
+            <div class="active-show-details-header">
+                <button class="back-to-shows-btn" id="backToShowsBtn">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Shows
+                </button>
+                <div class="active-show-info">
+                    <h2 id="activeShowTitle">Show Title</h2>
+                    <p id="activeShowMeta">Venue & Timing Info</p>
+                </div>
+                <div class="websocket-badge" id="wsBadge">
+                    <span class="badge-dot"></span>
+                    <span class="badge-text" id="wsBadgeText">Connecting WebSockets...</span>
+                </div>
+            </div>
+
+            <!-- Seat Selection Interactive Area -->
+            <div class="seat-selection-card">
+                <!-- Legends -->
+                <div class="seating-legend">
+                    <div class="legend-item">
+                        <div class="legend-box available-legend"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box selected-legend"></div>
+                        <span>Selected</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box locked-legend"></div>
+                        <span>Locked (Other User)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box booked-legend"></div>
+                        <span>Sold / Booked</span>
+                    </div>
+                </div>
+
+                <!-- Seating Grid / Venue Map -->
+                <div class="seating-container">
+                    <div class="screen-indicator" id="stageIndicator">
+                        <div class="screen-arc"></div>
+                        <span id="screenLabel">SCREEN THIS WAY</span>
+                    </div>
+                    
+                    <div class="seating-map" id="seatingMap">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER CHECKOUT DRAWER -->
+    <div class="checkout-drawer" id="checkoutDrawer">
+        <div class="drawer-container">
+            <div class="drawer-left">
+                <div class="selected-seats-info">
+                    <span class="seats-count-label" id="seatsCountText">0 Seats Selected</span>
+                    <span class="seat-numbers-list" id="seatNumbersList">None</span>
+                </div>
+                <div class="pricing-breakdown">
+                    <div class="pricing-line">Subtotal: <span id="subtotalAmount">Rs. 0.00</span></div>
+                    <div class="pricing-line discount-line hidden" id="discountLine">Discount: -<span id="discountAmount">Rs. 0.00</span></div>
+                    <div class="pricing-line final-total">Total: <span id="totalAmount">Rs. 0.00</span></div>
+                </div>
+            </div>
+            
+            <div class="drawer-right">
+                <!-- Promo Code Box -->
+                <div class="coupon-section">
+                    <input type="text" placeholder="Promo Code (FLAT50, SUPERDEAL)" id="couponInput">
+                    <button class="apply-coupon-btn" id="applyCouponBtn">Apply</button>
+                    <button class="remove-coupon-btn hidden" id="removeCouponBtn">Remove</button>
+                </div>
+                <!-- Book CTA -->
+                <button class="proceed-pay-btn" id="proceedPayBtn">
+                    Proceed to Pay <span id="payBtnAmount">Rs. 0.00</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION POPUPS -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- BOOKING SUCCESS MODAL -->
+    <div class="modal-overlay hidden" id="successModal">
+        <div class="success-modal-card">
+            <div class="success-icon-wrapper">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h2>Booking Confirmed!</h2>
+            <p>Your tickets have been locked and purchased successfully.</p>
+            <div class="modal-details">
+                <div class="detail-row">
+                    <span class="detail-lbl">Booking ID:</span>
+                    <span class="detail-val" id="modalBookingId">#12345</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-lbl">Event:</span>
+                    <span class="detail-val" id="modalEventTitle">Interstellar Drift</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-lbl">Seats:</span>
+                    <span class="detail-val" id="modalSeats">E5, E6</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-lbl">Total Paid:</span>
+                    <span class="detail-val highlight-val" id="modalTotal">Rs. 300.00</span>
+                </div>
+            </div>
+            <button class="close-modal-btn" id="closeModalBtn">Done</button>
+        </div>
+    </div>
+
+    <!-- client logic -->
+    <script>
+        // State variables
+        let activeUser = null;
+        let usersList = [];
+        let showsList = [];
+        let activeShow = null;
+        let selectedSeats = new Set(); // holds seat_id of currently selected seats
+        let activeCoupon = null;
+        let socket = null;
+        let lockExpiryTimers = {}; // Map to track expiration timers for UI locks
+
+        // UI elements
+        const userSelect = document.getElementById("userSelect");
+        const showsGrid = document.getElementById("showsGrid");
+        const bookingWorkspace = document.getElementById("bookingWorkspace");
+        const seatingMap = document.getElementById("seatingMap");
+        const checkoutDrawer = document.getElementById("checkoutDrawer");
+        const seatsCountText = document.getElementById("seatsCountText");
+        const seatNumbersList = document.getElementById("seatNumbersList");
+        const subtotalAmount = document.getElementById("subtotalAmount");
+        const discountLine = document.getElementById("discountLine");
+        const discountAmount = document.getElementById("discountAmount");
+        const totalAmount = document.getElementById("totalAmount");
+        const payBtnAmount = document.getElementById("payBtnAmount");
+        const couponInput = document.getElementById("couponInput");
+        const applyCouponBtn = document.getElementById("applyCouponBtn");
+        const removeCouponBtn = document.getElementById("removeCouponBtn");
+        const proceedPayBtn = document.getElementById("proceedPayBtn");
+        const resetDbBtn = document.getElementById("resetDbBtn");
+        const successModal = document.getElementById("successModal");
+
+        // Initialization
+        window.addEventListener("DOMContentLoaded", async () => {
+            await loadUsers();
+            await loadShows();
+            setupEventListeners();
+        });
+
+        // Load mock users
+        async function loadUsers() {
+            try {
+                const res = await fetch("/api/users");
+                usersList = await res.json();
+                userSelect.innerHTML = "";
+                usersList.forEach(user => {
+                    const opt = document.createElement("option");
+                    opt.value = user.user_id;
+                    opt.textContent = `${user.name} (${user.email})`;
+                    userSelect.appendChild(opt);
+                });
+                if (usersList.length > 0) {
+                    activeUser = usersList[0];
+                }
+            } catch (err) {
+                showToast("Failed to load simulated users.", "error");
+            }
+        }
+
+        // Load all active shows
+        async function loadShows() {
+            try {
+                const res = await fetch("/api/shows");
+                showsList = await res.json();
+                renderShows();
+            } catch (err) {
+                showToast("Failed to fetch shows from server.", "error");
+            }
+        }
+
+        // Render Show Cards with BookMyShow Aesthetics
+        function renderShows() {
+            showsGrid.innerHTML = "";
+            showsList.forEach(show => {
+                const card = document.createElement("div");
+                card.className = "show-card";
+                
+                // Get corresponding icon/tag color
+                let typeIcon = "fa-film";
+                let badgeClass = "badge-movie";
+                if (show.event_type === "Concert") {
+                    typeIcon = "fa-music";
+                    badgeClass = "badge-concert";
+                } else if (show.event_type === "Stand-up") {
+                    typeIcon = "fa-microphone";
+                    badgeClass = "badge-comedy";
+                } else if (show.event_type === "Alternative") {
+                    typeIcon = "fa-trophy";
+                    badgeClass = "badge-sports";
+                }
+
+                const startTime = new Date(show.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const startDate = new Date(show.start_time).toLocaleDateString([], { month: 'short', day: 'numeric' });
+
+                card.innerHTML = `
+                    <div class="card-image-placeholder event-${show.event_type.toLowerCase()}">
+                        <i class="fa-solid ${typeIcon} event-bg-icon"></i>
+                        <span class="show-type-badge ${badgeClass}">${show.event_type}</span>
+                    </div>
+                    <div class="show-card-body">
+                        <h3 class="show-title" title="${show.event_title}">${show.event_title}</h3>
+                        <div class="show-meta-row">
+                            <span class="show-venue"><i class="fa-solid fa-location-dot"></i> ${show.venue_name}</span>
+                        </div>
+                        <div class="show-meta-row">
+                            <span class="show-time"><i class="fa-regular fa-clock"></i> ${startDate} • ${startTime}</span>
+                        </div>
+                        <div class="show-price-row">
+                            <span class="price-lbl">Base Price</span>
+                            <span class="price-val">Rs. ${parseFloat(show.base_price).toFixed(2)}</span>
+                        </div>
+                        <button class="book-tickets-btn">Book Tickets</button>
+                    </div>
+                `;
+
+                // Handle click on booking
+                card.querySelector(".book-tickets-btn").addEventListener("click", () => {
+                    startBookingFlow(show);
+                });
+
+                showsGrid.appendChild(card);
+            });
+        }
+
+        // Setup WebSocket & Seating map UI
+        function startBookingFlow(show) {
+            activeShow = show;
+            selectedSeats.clear();
+            activeCoupon = null;
+            couponInput.value = "";
+            applyCouponBtn.classList.remove("hidden");
+            removeCouponBtn.classList.add("hidden");
+            couponInput.disabled = false;
+            updateCheckoutUI();
+            
+            document.getElementById("mainTitle").classList.add("hidden");
+            document.querySelector(".subtitle").classList.add("hidden");
+            document.getElementById("showsGrid").classList.add("hidden");
+            bookingWorkspace.classList.remove("hidden");
+
+            // Setup active show details header
+            document.getElementById("activeShowTitle").textContent = show.event_title;
+            const sTime = new Date(show.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const sDate = new Date(show.start_time).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+            document.getElementById("activeShowMeta").innerHTML = `<i class="fa-solid fa-location-dot"></i> ${show.venue_name} &nbsp;|&nbsp; <i class="fa-regular fa-calendar-days"></i> ${sDate}, ${sTime}`;
+
+            // Adjust stage indicator label
+            const screenLabel = document.getElementById("screenLabel");
+            if (show.event_type === "Movie") {
+                screenLabel.textContent = "SCREEN THIS WAY";
+            } else if (show.event_type === "Concert" || show.event_type === "Stand-up") {
+                screenLabel.textContent = "STAGE THIS WAY";
+            } else {
+                screenLabel.textContent = "FIELD / COURT THIS WAY";
+            }
+
+            // Establish WebSocket Connection
+            setupWebsocket(show.show_id);
+
+            // Fetch and render seats
+            fetchAndRenderSeats(show.show_id);
+        }
+
+        // Setup WS channel
+        function setupWebsocket(showId) {
+            if (socket) {
+                socket.close();
+            }
+
+            const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            const wsUrl = `${protocol}//${window.location.host}/ws/shows/${showId}`;
+            
+            const badge = document.getElementById("wsBadge");
+            const badgeText = document.getElementById("wsBadgeText");
+            
+            badge.className = "websocket-badge connecting";
+            badgeText.textContent = "Connecting WebSockets...";
+
+            socket = new WebSocket(wsUrl);
+
+            socket.onopen = () => {
+                badge.className = "websocket-badge connected";
+                badgeText.textContent = "Syncing Live State";
+            };
+
+            socket.onclose = () => {
+                badge.className = "websocket-badge disconnected";
+                badgeText.textContent = "Connection Closed";
+            };
+
+            socket.onerror = () => {
+                badge.className = "websocket-badge disconnected";
+                badgeText.textContent = "Connection Error";
+            };
+
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.show_id === showId) {
+                    if (data.event === "seats_updated") {
+                        updateSeatsStateInUI(data.seat_ids, data.status, data.locked_until);
+                    } else if (data.event === "seats_expired") {
+                        // Refresh seats to grab expired ones
+                        fetchAndRenderSeats(showId);
+                    }
+                }
+            };
+        }
+
+        // Fetch seat layouts
+        async function fetchAndRenderSeats(showId) {
+            try {
+                const res = await fetch(`/api/shows/${showId}/seats`);
+                const seats = await res.json();
+                renderSeatMap(seats);
+            } catch (err) {
+                showToast("Failed to load show seats.", "error");
+            }
+        }
+
+        // Render seats according to their tiers
+        function renderSeatMap(seats) {
+            seatingMap.innerHTML = "";
+            
+            // Group seats by tier and row
+            const seatsByTier = {};
+            seats.forEach(s => {
+                const tierName = s.tier_name || "Standard";
+                if (!seatsByTier[tierName]) {
+                    seatsByTier[tierName] = {
+                        multiplier: s.multiplier,
+                        rows: {}
+                    };
+                }
+                if (!seatsByTier[tierName].rows[s.row_num]) {
+                    seatsByTier[tierName].rows[s.row_num] = [];
+                }
+                seatsByTier[tierName].rows[s.row_num].push(s);
+            });
+
+            // Iterate and draw each tier
+            for (const [tierName, tierData] of Object.entries(seatsByTier)) {
+                const tierSection = document.createElement("div");
+                tierSection.className = "seating-tier-section";
+                
+                // Tier Header Pricing
+                const tierHeader = document.createElement("div");
+                tierHeader.className = "seating-tier-header";
+                const tierPrice = parseFloat(activeShow.base_price) * parseFloat(tierData.multiplier);
+                tierHeader.innerHTML = `
+                    <span class="tier-title">${tierName}</span>
+                    <span class="tier-price-label">Rs. ${tierPrice.toFixed(2)}</span>
+                `;
+                tierSection.appendChild(tierHeader);
+
+                // Draw rows
+                const rowsContainer = document.createElement("div");
+                rowsContainer.className = "rows-container";
+
+                // Sort row names
+                const sortedRows = Object.keys(tierData.rows).sort();
+                sortedRows.forEach(rowName => {
+                    const rowDiv = document.createElement("div");
+                    rowDiv.className = "seating-row";
+                    
+                    // Row Label Left
+                    const labelLeft = document.createElement("div");
+                    labelLeft.className = "row-label";
+                    labelLeft.textContent = rowName;
+                    rowDiv.appendChild(labelLeft);
+
+                    // Seats Grid
+                    const seatsGrid = document.createElement("div");
+                    seatsGrid.className = "row-seats";
+
+                    // Sort seats by seat number
+                    const rowSeats = tierData.rows[rowName].sort((a, b) => a.seat_id - b.seat_id);
+                    rowSeats.forEach(seat => {
+                        const seatBtn = document.createElement("button");
+                        seatBtn.className = `seat-node ${seat.status.toLowerCase()}`;
+                        seatBtn.id = `seat-${seat.seat_id}`;
+                        seatBtn.setAttribute("data-seat-id", seat.seat_id);
+                        seatBtn.setAttribute("data-seat-number", seat.seat_number);
+                        seatBtn.setAttribute("data-price", parseFloat(activeShow.base_price) * parseFloat(seat.multiplier));
+                        
+                        // Seat tooltip
+                        seatBtn.title = `${seat.seat_number} - Rs. ${(parseFloat(activeShow.base_price) * parseFloat(seat.multiplier)).toFixed(2)} (${seat.status})`;
+
+                        // Show lock icon if seat is locked
+                        if (seat.status === "Locked") {
+                            seatBtn.innerHTML = '<i class="fa-solid fa-lock seat-lock-icon"></i>';
+                            // Start expiration count down in UI
+                            if (seat.locked_until) {
+                                startUILockTimer(seat.seat_id, seat.locked_until);
+                            }
+                        } else {
+                            seatBtn.textContent = seat.seat_number.replace(/^\D+/g, ''); // Extract only number digits
+                        }
+
+                        // Event handler for seat click
+                        seatBtn.addEventListener("click", () => handleSeatInteraction(seat, seatBtn));
+
+                        seatsGrid.appendChild(seatBtn);
+                    });
+
+                    rowDiv.appendChild(seatsGrid);
+                    rowsContainer.appendChild(rowDiv);
+                });
+
+                tierSection.appendChild(rowsContainer);
+                seatingMap.appendChild(tierSection);
+            }
+        }
+
+        // Handle seat click
+        function handleSeatInteraction(seat, seatBtn) {
+            const seatId = seat.seat_id;
+            
+            if (seatBtn.classList.contains("booked")) {
+                showToast("This seat is already booked.", "warning");
+                return;
+            }
+
+            if (seatBtn.classList.contains("locked")) {
+                showToast("This seat is currently held/locked by another user.", "warning");
+                return;
+            }
+
+            if (selectedSeats.has(seatId)) {
+                // De-select
+                selectedSeats.delete(seatId);
+                seatBtn.classList.remove("selected");
+                
+                // Send WebSocket unlock command to backend to free seat hold immediately
+                sendWsCommand("unlock", [seatId]);
+            } else {
+                // Select
+                selectedSeats.add(seatId);
+                seatBtn.classList.add("selected");
+
+                // Send WebSocket lock command to backend to hold seat for 60 seconds
+                sendWsCommand("lock", [seatId]);
+            }
+
+            updateCheckoutUI();
+        }
+
+        // Send WS Commands
+        function sendWsCommand(action, seatIds) {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                const payload = {
+                    action: action,
+                    show_id: activeShow.show_id,
+                    seat_ids: seatIds,
+                    user_id: parseInt(userSelect.value)
+                };
+                socket.send(JSON.stringify(payload));
+            }
+        }
+
+        // Real-time updates from WebSocket broadcasts
+        function updateSeatsStateInUI(seatIds, newStatus, lockedUntil) {
+            seatIds.forEach(seatId => {
+                const seatBtn = document.getElementById(`seat-${seatId}`);
+                if (!seatBtn) return;
+
+                // Cancel existing timers for this node
+                if (lockExpiryTimers[seatId]) {
+                    clearTimeout(lockExpiryTimers[seatId]);
+                    delete lockExpiryTimers[seatId];
+                }
+
+                // If user has this seat selected locally, but it gets locked/booked by someone else, deselect it
+                if (selectedSeats.has(seatId) && newStatus !== "Available" && newStatus !== "Selected") {
+                    // Check if it was broadcasted by a lock that isn't ours (we can't easily tell user from socket event, 
+                    // but we will let WebSocket handle it or assume it's another client. If we sent it, we already have it marked selected).
+                    // In real app, socket messages include user_id. For safety, we keep ours selected if we are booking it.
+                    // But if it changes to Booked, we must deselect.
+                    if (newStatus === "Booked") {
+                        selectedSeats.delete(seatId);
+                        showToast(`Seat ${seatBtn.getAttribute("data-seat-number")} was purchased by another user.`, "info");
+                    }
+                }
+
+                // Reset class
+                seatBtn.className = "seat-node";
+                seatBtn.innerHTML = "";
+                
+                if (newStatus === "Available") {
+                    seatBtn.classList.add("available");
+                    seatBtn.textContent = seatBtn.getAttribute("data-seat-number").replace(/^\D+/g, '');
+                    seatBtn.title = `${seatBtn.getAttribute("data-seat-number")} - Rs. ${parseFloat(seatBtn.getAttribute("data-price")).toFixed(2)} (Available)`;
+                } else if (newStatus === "Locked") {
+                    // If it is selected locally, maintain selected styling
+                    if (selectedSeats.has(seatId)) {
+                        seatBtn.className = "seat-node selected";
+                        seatBtn.textContent = seatBtn.getAttribute("data-seat-number").replace(/^\D+/g, '');
+                    } else {
+                        seatBtn.className = "seat-node locked";
+                        seatBtn.innerHTML = '<i class="fa-solid fa-lock seat-lock-icon"></i>';
+                        if (lockedUntil) {
+                            startUILockTimer(seatId, lockedUntil);
+                        }
+                    }
+                } else if (newStatus === "Booked") {
+                    seatBtn.classList.add("booked");
+                    seatBtn.textContent = "Sold";
+                    seatBtn.title = "Sold Out";
+                }
+            });
+            
+            updateCheckoutUI();
+        }
+
+        // Start lock expiration timer for client UI feedback
+        function startUILockTimer(seatId, lockedUntilStr) {
+            const expiryTime = new Date(lockedUntilStr).getTime();
+            
+            function updateTimer() {
+                const now = new Date().getTime();
+                const diff = expiryTime - now;
+                
+                if (diff <= 0) {
+                    // Lock expired
+                    const seatBtn = document.getElementById(`seat-${seatId}`);
+                    if (seatBtn && seatBtn.classList.contains("locked")) {
+                        seatBtn.className = "seat-node available";
+                        seatBtn.textContent = seatBtn.getAttribute("data-seat-number").replace(/^\D+/g, '');
+                        seatBtn.innerHTML = "";
+                    }
+                    delete lockExpiryTimers[seatId];
+                } else {
+                    lockExpiryTimers[seatId] = setTimeout(updateTimer, diff);
+                }
+            }
+            
+            updateTimer();
+        }
+
+        // Calculate subtotal, apply coupon and update Checkout Drawer
+        async function updateCheckoutUI() {
+            if (selectedSeats.size === 0) {
+                checkoutDrawer.classList.remove("visible");
+                return;
+            }
+
+            checkoutDrawer.classList.add("visible");
+            seatsCountText.textContent = `${selectedSeats.size} Seat${selectedSeats.size > 1 ? 's' : ''} Selected`;
+            
+            // Get seat info and calculate subtotal
+            let subtotal = 0;
+            const seatNames = [];
+            
+            selectedSeats.forEach(seatId => {
+                const btn = document.getElementById(`seat-${seatId}`);
+                if (btn) {
+                    subtotal += parseFloat(btn.getAttribute("data-price"));
+                    seatNames.push(btn.getAttribute("data-seat-number"));
+                }
+            });
+
+            seatNumbersList.textContent = seatNames.sort().join(", ");
+            subtotalAmount.textContent = `Rs. ${subtotal.toFixed(2)}`;
+
+            // Coupon recalculation
+            if (activeCoupon) {
+                try {
+                    const res = await fetch(`/api/coupons/validate?code=${activeCoupon.code}&base_amount=${subtotal}`, {
+                        method: "POST"
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        discountLine.classList.remove("hidden");
+                        discountAmount.textContent = `Rs. ${parseFloat(data.discount_amount).toFixed(2)}`;
+                        totalAmount.textContent = `Rs. ${parseFloat(data.final_amount).toFixed(2)}`;
+                        payBtnAmount.textContent = `Rs. ${parseFloat(data.final_amount).toFixed(2)}`;
+                    } else {
+                        // Coupon not valid for this subtotal or expired
+                        removeCoupon();
+                    }
+                } catch (err) {
+                    removeCoupon();
+                }
+            } else {
+                discountLine.classList.add("hidden");
+                totalAmount.textContent = `Rs. ${subtotal.toFixed(2)}`;
+                payBtnAmount.textContent = `Rs. ${subtotal.toFixed(2)}`;
+            }
+        }
+
+        // Apply coupon code
+        async function applyCoupon() {
+            const code = couponInput.value.trim().toUpperCase();
+            if (!code) {
+                showToast("Please enter a promo code.", "warning");
+                return;
+            }
+
+            let subtotal = 0;
+            selectedSeats.forEach(seatId => {
+                const btn = document.getElementById(`seat-${seatId}`);
+                if (btn) {
+                    subtotal += parseFloat(btn.getAttribute("data-price"));
+                }
+            });
+
+            try {
+                const res = await fetch(`/api/coupons/validate?code=${code}&base_amount=${subtotal}`, {
+                    method: "POST"
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    activeCoupon = data;
+                    applyCouponBtn.classList.add("hidden");
+                    removeCouponBtn.classList.remove("hidden");
+                    couponInput.disabled = true;
+                    showToast(`Promo code '${code}' applied successfully!`, "success");
+                    updateCheckoutUI();
+                } else {
+                    const errData = await res.json();
+                    showToast(errData.detail || "Invalid coupon code.", "error");
+                }
+            } catch (err) {
+                showToast("Failed to validate promo code.", "error");
+            }
+        }
+
+        // Remove coupon
+        function removeCoupon() {
+            activeCoupon = null;
+            couponInput.value = "";
+            applyCouponBtn.classList.remove("hidden");
+            removeCouponBtn.classList.add("hidden");
+            couponInput.disabled = false;
+            showToast("Promo code removed.", "info");
+            updateCheckoutUI();
+        }
+
+        // Book selected tickets
+        async function processBooking() {
+            if (selectedSeats.size === 0) return;
+
+            proceedPayBtn.disabled = true;
+            proceedPayBtn.textContent = "Processing Payment...";
+
+            const payload = {
+                user_id: parseInt(userSelect.value),
+                show_id: activeShow.show_id,
+                seat_ids: Array.from(selectedSeats),
+                coupon_code: activeCoupon ? activeCoupon.code : null
+            };
+
+            try {
+                const res = await fetch("/api/bookings", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    const booking = await res.json();
+                    
+                    // Show success modal
+                    showSuccessModal(booking);
+                    
+                    // Clear state
+                    selectedSeats.clear();
+                    activeCoupon = null;
+                    checkoutDrawer.classList.remove("visible");
+                    
+                    // Re-fetch seats state
+                    fetchAndRenderSeats(activeShow.show_id);
+                } else {
+                    const errData = await res.json();
+                    showToast(errData.detail || "Booking failed. Please try again.", "error");
+                }
+            } catch (err) {
+                showToast("Server error processing booking.", "error");
+            } finally {
+                proceedPayBtn.disabled = false;
+                proceedPayBtn.textContent = "Proceed to Pay";
+                updateCheckoutUI();
+            }
+        }
+
+        // Show Success confirmation Modal
+        function showSuccessModal(booking) {
+            document.getElementById("modalBookingId").textContent = `#BMS-${booking.booking_id}`;
+            document.getElementById("modalEventTitle").textContent = booking.event_title;
+            
+            const seatNames = booking.seats.map(s => s.seat_number).sort().join(", ");
+            document.getElementById("modalSeats").textContent = seatNames;
+            
+            document.getElementById("modalTotal").textContent = `Rs. ${parseFloat(booking.total_amount).toFixed(2)}`;
+            
+            successModal.classList.remove("hidden");
+        }
+
+        // Toast notifications helper
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            toast.className = `toast-node ${type}`;
+            
+            let icon = "fa-circle-check";
+            if (type === "error") icon = "fa-circle-xmark";
+            if (type === "warning") icon = "fa-triangle-exclamation";
+            if (type === "info") icon = "fa-circle-info";
+
+            toast.innerHTML = `
+                <i class="fa-solid ${icon}"></i>
+                <span class="toast-message">${message}</span>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add("fade-out");
+                setTimeout(() => toast.remove(), 500);
+            }, 3500);
+        }
+
+        // Event listeners linking
+        function setupEventListeners() {
+            // User Selector change clears local selections to avoid websocket sync anomalies
+            userSelect.addEventListener("change", () => {
+                if (selectedSeats.size > 0) {
+                    sendWsCommand("unlock", Array.from(selectedSeats));
+                    selectedSeats.clear();
+                    updateCheckoutUI();
+                }
+                // Refresh seat visual node classes
+                if (activeShow) {
+                    fetchAndRenderSeats(activeShow.show_id);
+                }
+                const usr = usersList.find(u => u.user_id === parseInt(userSelect.value));
+                if (usr) {
+                    activeUser = usr;
+                    showToast(`Simulated account switched to ${usr.name}`, "info");
+                }
+            });
+
+            // Back button
+            document.getElementById("backToShowsBtn").addEventListener("click", () => {
+                // Unlock any currently selected seats before backing out
+                if (selectedSeats.size > 0) {
+                    sendWsCommand("unlock", Array.from(selectedSeats));
+                    selectedSeats.clear();
+                }
+                if (socket) {
+                    socket.close();
+                    socket = null;
+                }
+                
+                bookingWorkspace.classList.add("hidden");
+                checkoutDrawer.classList.remove("visible");
+                document.getElementById("mainTitle").classList.remove("hidden");
+                document.querySelector(".subtitle").classList.remove("hidden");
+                showsGrid.classList.remove("hidden");
+                
+                // Refresh shows list
+                loadShows();
+            });
+
+            // Coupon listeners
+            applyCouponBtn.addEventListener("click", applyCoupon);
+            removeCouponBtn.addEventListener("click", removeCoupon);
+            couponInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") applyCoupon();
+            });
+
+            // Checkout action
+            proceedPayBtn.addEventListener("click", processBooking);
+
+            // Close success modal
+            document.getElementById("closeModalBtn").addEventListener("click", () => {
+                successModal.classList.add("hidden");
+            });
+
+            // Reset DB button action
+            resetDbBtn.addEventListener("click", async () => {
+                if (confirm("Resetting database will clear all reservations and seed clean mock data. Proceed?")) {
+                    resetDbBtn.disabled = true;
+                    resetDbBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Resetting...';
+                    
+                    try {
+                        const res = await fetch("/api/db/reset", { method: "POST" });
+                        if (res.ok) {
+                            showToast("Database successfully re-seeded!", "success");
+                            if (activeShow) {
+                                // deselect and reload
+                                selectedSeats.clear();
+                                updateCheckoutUI();
+                                fetchAndRenderSeats(activeShow.show_id);
+                            }
+                            await loadShows();
+                        } else {
+                            showToast("Failed to reset database schema.", "error");
+                        }
+                    } catch (err) {
+                        showToast("API error resetting database.", "error");
+                    } finally {
+                        resetDbBtn.disabled = false;
+                        resetDbBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Reset DB';
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

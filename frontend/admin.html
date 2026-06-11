@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookMyShow - Vendor Management & Command Center</title>
+    <meta name="description" content="Vendor admin dashboard for managing show scheduling, coupon codes, viewing sales analytics, and overriding seat layouts in real-time.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+    <!-- TOP HEADER -->
+    <header class="admin-header">
+        <div class="header-container">
+            <div class="header-left">
+                <div class="admin-logo">
+                    <span class="logo-bms">BMS</span><span class="logo-admin">Command Center</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <!-- Vendor Selector -->
+                <div class="vendor-selector-wrapper">
+                    <label for="vendorSelect"><i class="fa-solid fa-building-user"></i> Manage Vendor:</label>
+                    <select id="vendorSelect" class="vendor-select">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <a href="/" class="view-site-link" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open Booking Site</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main class="admin-container">
+        <!-- ROW 1: LIVE ANALYTICS -->
+        <section class="analytics-section">
+            <div class="section-title-wrapper">
+                <h2><i class="fa-solid fa-chart-line"></i> Live Analytics</h2>
+                <span class="live-pulse"><span class="pulse-dot"></span> Real-time data</span>
+            </div>
+            <div class="analytics-grid">
+                <!-- Gross Revenue Card -->
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <span>Total Revenue</span>
+                        <div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                    </div>
+                    <div class="card-body">
+                        <span class="metric-value" id="revenueMetric">Rs. 0.00</span>
+                    </div>
+                </div>
+
+                <!-- Tickets Sold Card -->
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <span>Tickets Sold</span>
+                        <div class="card-icon"><i class="fa-solid fa-ticket"></i></div>
+                    </div>
+                    <div class="card-body">
+                        <span class="metric-value" id="ticketsMetric">0</span>
+                    </div>
+                </div>
+
+                <!-- Occupancy Rate Card -->
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <span>Seat Occupancy Rate</span>
+                        <div class="card-icon"><i class="fa-solid fa-percent"></i></div>
+                    </div>
+                    <div class="card-body">
+                        <span class="metric-value" id="occupancyMetric">0.0%</span>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="occupancyFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROW 2: MANAGEMENT & SCHEDULING -->
+        <div class="workspace-grid">
+            <!-- Left Panel: Create Show & Coupons -->
+            <div class="workspace-panel-left">
+                <!-- Show Scheduler -->
+                <div class="admin-form-card">
+                    <h3><i class="fa-regular fa-calendar-plus"></i> Schedule New Show</h3>
+                    <form id="schedulerForm">
+                        <div class="form-group">
+                            <label for="eventSelect">Event Asset</label>
+                            <select id="eventSelect" required>
+                                <!-- Dynamically loaded -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="venueSelect">Target Venue</label>
+                            <select id="venueSelect" required>
+                                <!-- Dynamically loaded -->
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="startTime">Start Timing</label>
+                                <input type="datetime-local" id="startTime" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="endTime">End Timing</label>
+                                <input type="datetime-local" id="endTime" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="basePrice">Base Price (Rs.)</label>
+                            <input type="number" step="0.01" min="0" id="basePrice" placeholder="e.g. 250.00" required>
+                        </div>
+                        <button type="submit" class="submit-form-btn">Schedule Show</button>
+                    </form>
+                </div>
+
+                <!-- Coupon Campaigns -->
+                <div class="admin-form-card">
+                    <h3><i class="fa-solid fa-tags"></i> Create Promo Coupon</h3>
+                    <form id="couponForm">
+                        <div class="form-group">
+                            <label for="couponCode">Promo Code</label>
+                            <input type="text" id="couponCode" placeholder="e.g. FESTIVE30" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="discountType">Discount Type</label>
+                                <select id="discountType" required>
+                                    <option value="Flat">Flat Discount</option>
+                                    <option value="Percentage">Percentage (%)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="discountValue">Value</label>
+                                <input type="number" step="0.01" min="0" id="discountValue" placeholder="e.g. 50" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="maxDiscount">Max Discount (Percentage cap)</label>
+                                <input type="number" step="0.01" min="0" id="maxDiscount" placeholder="e.g. 100">
+                            </div>
+                            <div class="form-group">
+                                <label for="expiryDate">Expiry Date</label>
+                                <input type="datetime-local" id="expiryDate" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-form-btn">Add Coupon</button>
+                    </form>
+                </div>
+
+                <!-- Coupon Performance Ledger -->
+                <div class="admin-form-card">
+                    <h3><i class="fa-solid fa-list-check"></i> Coupon Performance</h3>
+                    <div class="table-container">
+                        <table class="coupon-table" id="couponUsageTable">
+                            <thead>
+                                <tr>
+                                    <th>Promo Code</th>
+                                    <th>Redemptions</th>
+                                    <th>Total Savings</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Show Seating Map Live Overrides -->
+            <div class="workspace-panel-right">
+                <div class="admin-form-card full-height">
+                    <h3><i class="fa-solid fa-display"></i> Interactive Seating Override</h3>
+                    <p class="panel-subtitle">Select a show below to inspect its seating layout and apply blocks/releases.</p>
+                    
+                    <!-- Vendor Show List Dropdown -->
+                    <div class="show-selection-bar">
+                        <label for="adminShowSelect">Select Active Show:</label>
+                        <select id="adminShowSelect">
+                            <option value="">-- Choose Show --</option>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Seating Map Grid -->
+                    <div class="admin-seat-map-wrapper hidden" id="adminSeatMapWrapper">
+                        <div class="map-header-stats">
+                            <div class="websocket-status-badge" id="adminWsBadge">
+                                <span class="badge-dot"></span>
+                                <span id="adminWsBadgeText">Syncing...</span>
+                            </div>
+                            <div class="selected-counter" id="adminSelectedText">0 Seats Selected</div>
+                        </div>
+
+                        <!-- Seating Legend -->
+                        <div class="admin-seating-legend">
+                            <div class="leg-item"><div class="leg-box leg-available"></div>Available</div>
+                            <div class="leg-item"><div class="leg-box leg-selected"></div>Selected</div>
+                            <div class="leg-item"><div class="leg-box leg-locked"></div>Locked (Held)</div>
+                            <div class="leg-item"><div class="leg-box leg-booked"></div>Booked (Sold)</div>
+                            <div class="leg-item"><div class="leg-box leg-blocked"></div>Blocked (Offline)</div>
+                        </div>
+
+                        <!-- Map Render Container -->
+                        <div class="seating-grid-container">
+                            <div class="admin-screen-arc">STAGE/SCREEN</div>
+                            <div class="admin-seating-map" id="adminSeatingMap">
+                                <!-- Loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Overrides Action Bar -->
+                        <div class="overrides-action-bar">
+                            <button class="action-btn block-btn" id="blockSeatsBtn">
+                                <i class="fa-solid fa-ban"></i> Block Seats (Offline Hold)
+                            </button>
+                            <button class="action-btn release-btn" id="releaseSeatsBtn">
+                                <i class="fa-solid fa-circle-check"></i> Release / Make Available
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- NOTIFICATION TOASTS -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // State management
+        let activeVendorId = null;
+        let vendorsList = [];
+        let eventsList = [];
+        let showsList = [];
+        let currentShowId = null;
+        let adminSelectedSeats = new Set(); // holds seat_id integers
+        let adminSocket = null;
+        let wsHeartbeat = null;
+
+        // UI elements
+        const vendorSelect = document.getElementById("vendorSelect");
+        const eventSelect = document.getElementById("eventSelect");
+        const venueSelect = document.getElementById("venueSelect");
+        const adminShowSelect = document.getElementById("adminShowSelect");
+        const adminSeatMapWrapper = document.getElementById("adminSeatMapWrapper");
+        const adminSeatingMap = document.getElementById("adminSeatingMap");
+        const adminSelectedText = document.getElementById("adminSelectedText");
+        const blockSeatsBtn = document.getElementById("blockSeatsBtn");
+        const releaseSeatsBtn = document.getElementById("releaseSeatsBtn");
+
+        // Metrics elements
+        const revenueMetric = document.getElementById("revenueMetric");
+        const ticketsMetric = document.getElementById("ticketsMetric");
+        const occupancyMetric = document.getElementById("occupancyMetric");
+        const occupancyFill = document.getElementById("occupancyFill");
+        const couponUsageTable = document.getElementById("couponUsageTable").getElementsByTagName("tbody")[0];
+
+        // Forms
+        const schedulerForm = document.getElementById("schedulerForm");
+        const couponForm = document.getElementById("couponForm");
+
+        // Initialization
+        window.addEventListener("DOMContentLoaded", async () => {
+            await loadVendors();
+            await loadEvents();
+            setupEventListeners();
+        });
+
+        // Load Vendors
+        async function loadVendors() {
+            try {
+                const res = await fetch("/api/admin/vendors");
+                vendorsList = await res.json();
+                vendorSelect.innerHTML = "";
+                vendorsList.forEach(vendor => {
+                    const opt = document.createElement("option");
+                    opt.value = vendor.vendor_id;
+                    opt.textContent = vendor.name;
+                    vendorSelect.appendChild(opt);
+                });
+                if (vendorsList.length > 0) {
+                    activeVendorId = parseInt(vendorSelect.value);
+                    await reloadVendorDetails();
+                }
+            } catch (err) {
+                showToast("Failed to load vendors.", "error");
+            }
+        }
+
+        // Load Events for scheduling
+        async function loadEvents() {
+            try {
+                const res = await fetch("/api/shows"); // grabs shows metadata but we need events. Let's make an event list or fetch /api/shows
+                // We'll read from shows payload to map unique events, or query database events. 
+                // Since we can just list from shows or standard endpoint.
+                // Wait! Let's fetch all shows and map unique events, since we don't have a direct /api/events. 
+                // But wait! main.py has: api shows listing with event_id, event_title.
+                const resShows = await fetch("/api/shows");
+                const shows = await resShows.json();
+                const uniqueEvents = {};
+                shows.forEach(s => {
+                    uniqueEvents[s.event_id] = { id: s.event_id, title: s.event_title };
+                });
+                
+                eventSelect.innerHTML = "";
+                Object.values(uniqueEvents).forEach(evt => {
+                    const opt = document.createElement("option");
+                    opt.value = evt.id;
+                    opt.textContent = evt.title;
+                    eventSelect.appendChild(opt);
+                });
+            } catch (err) {
+                showToast("Failed to load events.", "error");
+            }
+        }
+
+        // Reload Vendor details (Analytics, Venues, Shows list)
+        async function reloadVendorDetails() {
+            if (!activeVendorId) return;
+            adminSelectedSeats.clear();
+            adminSelectedText.textContent = "0 Seats Selected";
+            
+            // 1. Fetch Analytics
+            await loadAnalytics();
+
+            // 2. Fetch Shows and Venues
+            await loadShowsAndVenues();
+        }
+
+        // Fetch Analytics
+        async function loadAnalytics() {
+            try {
+                const res = await fetch(`/api/admin/vendors/${activeVendorId}/analytics`);
+                const analytics = await res.json();
+                
+                revenueMetric.textContent = `Rs. ${parseFloat(analytics.total_revenue).toFixed(2)}`;
+                ticketsMetric.textContent = analytics.total_tickets;
+                
+                const occupancy = parseFloat(analytics.occupancy_rate).toFixed(1);
+                occupancyMetric.textContent = `${occupancy}%`;
+                occupancyFill.style.width = `${occupancy}%`;
+
+                // Render Coupon usage
+                couponUsageTable.innerHTML = "";
+                if (analytics.coupon_usage.length === 0) {
+                    couponUsageTable.innerHTML = `<tr><td colspan="3" class="empty-table-msg">No active coupon redemptions yet.</td></tr>`;
+                } else {
+                    analytics.coupon_usage.forEach(stats => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td class="coupon-code-cell">${stats.code}</td>
+                            <td>${stats.count}</td>
+                            <td class="savings-cell">Rs. ${parseFloat(stats.total_discount).toFixed(2)}</td>
+                        `;
+                        couponUsageTable.appendChild(tr);
+                    });
+                }
+            } catch (err) {
+                showToast("Failed to fetch analytics metrics.", "error");
+            }
+        }
+
+        // Fetch Shows & Venues
+        async function loadShowsAndVenues() {
+            try {
+                // Fetch all shows
+                const resShows = await fetch("/api/shows");
+                const allShows = await resShows.json();
+                
+                // Get unique venues for this vendor by fetching database venues or filtering.
+                // We'll filter all shows where show.venue owns this vendor. But since shows only contain venue name,
+                // let's fetch show seats or let main.py do the heavy lifting.
+                // Wait! Let's check which venues belong to this vendor. 
+                // Metro Cinema Group (vendor 1) owns venue 1 (Grand Cinema)
+                // Metropolis Promotions (vendor 2) owns venue 2 (Metropolis Arena)
+                // Star Comedy Network (vendor 3) owns venue 3 (The Comedy Lounge) and venue 4 (Olympia Stadium)
+                const venueMapByVendor = {
+                    1: [1],
+                    2: [2],
+                    3: [3, 4]
+                };
+
+                const allowedVenueIds = venueMapByVendor[activeVendorId] || [];
+
+                // Filter shows for this vendor's venues
+                showsList = allShows.filter(s => allowedVenueIds.includes(s.venue_id));
+                
+                // Populates show dropdown in seating manager
+                adminShowSelect.innerHTML = `<option value="">-- Choose Show --</option>`;
+                showsList.forEach(show => {
+                    const sTime = new Date(show.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const sDate = new Date(show.start_time).toLocaleDateString([], { month: 'short', day: 'numeric' });
+                    const opt = document.createElement("option");
+                    opt.value = show.show_id;
+                    opt.textContent = `${show.event_title} - ${show.venue_name} (${sDate} @ ${sTime})`;
+                    adminShowSelect.appendChild(opt);
+                });
+
+                // Populate Scheduler venue select
+                // Fetch all unique venues and filter
+                venueSelect.innerHTML = "";
+                // To avoid additional calls, map venue list manually:
+                const venuesData = [
+                    { id: 1, name: "Grand Cinema, Wave Mall", vendor_id: 1 },
+                    { id: 2, name: "Metropolis Arena", vendor_id: 2 },
+                    { id: 3, name: "The Comedy Lounge", vendor_id: 3 },
+                    { id: 4, name: "Olympia Stadium", vendor_id: 3 }
+                ];
+                const filteredVenues = venuesData.filter(v => v.vendor_id === activeVendorId);
+                filteredVenues.forEach(v => {
+                    const opt = document.createElement("option");
+                    opt.value = v.id;
+                    opt.textContent = v.name;
+                    venueSelect.appendChild(opt);
+                });
+
+                // Maintain current show selection if it is still valid
+                if (currentShowId && showsList.some(s => s.show_id === currentShowId)) {
+                    adminShowSelect.value = currentShowId;
+                } else {
+                    currentShowId = null;
+                    adminSeatMapWrapper.classList.add("hidden");
+                    if (adminSocket) {
+                        adminSocket.close();
+                        adminSocket = null;
+                    }
+                }
+            } catch (err) {
+                showToast("Failed to schedule list inputs.", "error");
+            }
+        }
+
+        // Setup WS synchronization for Admin Panel
+        function setupAdminWebsocket(showId) {
+            if (adminSocket) {
+                adminSocket.close();
+            }
+
+            const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            const wsUrl = `${protocol}//${window.location.host}/ws/shows/${showId}`;
+            
+            const badge = document.getElementById("adminWsBadge");
+            const badgeText = document.getElementById("adminWsBadgeText");
+            
+            badge.className = "websocket-status-badge connecting";
+            badgeText.textContent = "Connecting...";
+
+            adminSocket = new WebSocket(wsUrl);
+
+            adminSocket.onopen = () => {
+                badge.className = "websocket-status-badge connected";
+                badgeText.textContent = "Live Sync Active";
+            };
+
+            adminSocket.onclose = () => {
+                badge.className = "websocket-status-badge disconnected";
+                badgeText.textContent = "Disconnected";
+            };
+
+            adminSocket.onerror = () => {
+                badge.className = "websocket-status-badge disconnected";
+                badgeText.textContent = "Error";
+            };
+
+            adminSocket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.show_id === showId) {
+                    if (data.event === "seats_updated") {
+                        updateSeatsStateInAdminUI(data.seat_ids, data.status);
+                    } else if (data.event === "seats_expired") {
+                        loadShowSeatingGrid(showId);
+                    }
+                    // Refresh metrics live
+                    loadAnalytics();
+                }
+            };
+        }
+
+        // Load Seat map inside Admin Console
+        async function loadShowSeatingGrid(showId) {
+            try {
+                const res = await fetch(`/api/shows/${showId}/seats`);
+                const seats = await res.json();
+                
+                adminSeatingMap.innerHTML = "";
+                adminSelectedSeats.clear();
+                adminSelectedText.textContent = "0 Seats Selected";
+
+                // Group seats by tier and row
+                const seatsByTier = {};
+                seats.forEach(s => {
+                    const tierName = s.tier_name || "Standard";
+                    if (!seatsByTier[tierName]) {
+                        seatsByTier[tierName] = {
+                            multiplier: s.multiplier,
+                            rows: {}
+                        };
+                    }
+                    if (!seatsByTier[tierName].rows[s.row_num]) {
+                        seatsByTier[tierName].rows[s.row_num] = [];
+                    }
+                    seatsByTier[tierName].rows[s.row_num].push(s);
+                });
+
+                // Render each tier section
+                for (const [tierName, tierData] of Object.entries(seatsByTier)) {
+                    const tierDiv = document.createElement("div");
+                    tierDiv.className = "admin-tier-section";
+                    tierDiv.innerHTML = `<div class="admin-tier-name">${tierName}</div>`;
+                    
+                    const rowsDiv = document.createElement("div");
+                    rowsDiv.className = "admin-rows-container";
+
+                    const sortedRows = Object.keys(tierData.rows).sort();
+                    sortedRows.forEach(rowName => {
+                        const rowDiv = document.createElement("div");
+                        rowDiv.className = "admin-seating-row";
+                        
+                        const rowLbl = document.createElement("div");
+                        rowLbl.className = "admin-row-label";
+                        rowLbl.textContent = rowName;
+                        rowDiv.appendChild(rowLbl);
+
+                        const rowSeats = tierData.rows[rowName].sort((a, b) => a.seat_id - b.seat_id);
+                        rowSeats.forEach(seat => {
+                            const seatBtn = document.createElement("button");
+                            
+                            // Map state styling classes
+                            let stateClass = "avail";
+                            let iconHtml = seat.seat_number.replace(/^\D+/g, '');
+                            
+                            if (seat.status === "Booked") {
+                                if (seat.booking_id === null) {
+                                    stateClass = "blocked"; // Offline blocked by admin
+                                    iconHtml = '<i class="fa-solid fa-ban"></i>';
+                                } else {
+                                    stateClass = "booked"; // Booked by customer
+                                    iconHtml = '<i class="fa-solid fa-user-check"></i>';
+                                }
+                            } else if (seat.status === "Locked") {
+                                stateClass = "locked";
+                                iconHtml = '<i class="fa-solid fa-lock"></i>';
+                            }
+                            
+                            seatBtn.className = `admin-seat-node ${stateClass}`;
+                            seatBtn.id = `admin-seat-${seat.seat_id}`;
+                            seatBtn.setAttribute("data-seat-id", seat.seat_id);
+                            seatBtn.setAttribute("data-number", seat.seat_number);
+                            seatBtn.setAttribute("data-status", seat.status);
+                            seatBtn.setAttribute("data-booking-id", seat.booking_id);
+                            
+                            seatBtn.innerHTML = iconHtml;
+                            seatBtn.title = `${seat.seat_number} (${seat.status})`;
+
+                            seatBtn.addEventListener("click", () => handleAdminSeatClick(seatBtn));
+
+                            rowDiv.appendChild(seatBtn);
+                        });
+                        
+                        rowsDiv.appendChild(rowDiv);
+                    });
+                    
+                    tierDiv.appendChild(rowsDiv);
+                    adminSeatingMap.appendChild(tierDiv);
+                }
+            } catch (err) {
+                showToast("Failed to load show seating map.", "error");
+            }
+        }
+
+        // Handle seat click in admin map
+        function handleAdminSeatClick(seatBtn) {
+            const seatId = parseInt(seatBtn.getAttribute("data-seat-id"));
+            const currentStatus = seatBtn.getAttribute("data-status");
+            const bookingId = seatBtn.getAttribute("data-booking-id");
+
+            // We cannot override seats that are currently locked by standard users or already booked by customers
+            // to avoid transaction violations. We can only block Available seats, or release Blocked seats.
+            if (currentStatus === "Locked") {
+                showToast("This seat is currently held by a customer. Wait for it to expire.", "warning");
+                return;
+            }
+            if (currentStatus === "Booked" && bookingId !== "null" && bookingId !== "") {
+                showToast("This seat has already been purchased by a customer.", "warning");
+                return;
+            }
+
+            if (adminSelectedSeats.has(seatId)) {
+                adminSelectedSeats.delete(seatId);
+                seatBtn.classList.remove("selected");
+                
+                // Re-apply original class
+                if (currentStatus === "Booked") {
+                    seatBtn.classList.add("blocked");
+                } else {
+                    seatBtn.classList.add("avail");
+                }
+            } else {
+                adminSelectedSeats.add(seatId);
+                seatBtn.classList.add("selected");
+            }
+
+            adminSelectedText.textContent = `${adminSelectedSeats.size} Seat${adminSelectedSeats.size !== 1 ? 's' : ''} Selected`;
+        }
+
+        // Live updates on WS broadcasts
+        function updateSeatsStateInAdminUI(seatIds, newStatus) {
+            seatIds.forEach(seatId => {
+                const btn = document.getElementById(`admin-seat-${seatId}`);
+                if (!btn) return;
+
+                // De-select if selected
+                if (adminSelectedSeats.has(seatId)) {
+                    adminSelectedSeats.delete(seatId);
+                }
+
+                btn.className = "admin-seat-node";
+                btn.innerHTML = "";
+                btn.setAttribute("data-status", newStatus);
+
+                if (newStatus === "Available") {
+                    btn.classList.add("avail");
+                    btn.textContent = btn.getAttribute("data-number").replace(/^\D+/g, '');
+                    btn.setAttribute("data-booking-id", "null");
+                } else if (newStatus === "Locked") {
+                    btn.classList.add("locked");
+                    btn.innerHTML = '<i class="fa-solid fa-lock"></i>';
+                } else if (newStatus === "Booked") {
+                    // In socket, we might not pass booking_id. If status changes to Booked, we default to customer booking.
+                    // If it is block overrides, we override explicitly in the api call and get fresh updates.
+                    btn.classList.add("booked");
+                    btn.innerHTML = '<i class="fa-solid fa-user-check"></i>';
+                }
+            });
+
+            adminSelectedText.textContent = `${adminSelectedSeats.size} Seat${adminSelectedSeats.size !== 1 ? 's' : ''} Selected`;
+        }
+
+        // Apply seat block override
+        async function applyOverride(statusType) {
+            if (adminSelectedSeats.size === 0) {
+                showToast("Please select at least one seat to override.", "warning");
+                return;
+            }
+
+            const payload = {
+                show_id: currentShowId,
+                seat_ids: Array.from(adminSelectedSeats),
+                status: statusType
+            };
+
+            try {
+                const res = await fetch("/api/admin/seats/override", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showToast(`Successfully updated ${adminSelectedSeats.size} seats.`, "success");
+                    adminSelectedSeats.clear();
+                    adminSelectedText.textContent = "0 Seats Selected";
+                    
+                    // Reload map
+                    await loadShowSeatingGrid(currentShowId);
+                    
+                    // Reload analytics metrics
+                    await loadAnalytics();
+                } else {
+                    const err = await res.json();
+                    showToast(err.detail || "Failed to override seat states.", "error");
+                }
+            } catch (err) {
+                showToast("Server error during seat override.", "error");
+            }
+        }
+
+        // Event listeners linkage
+        function setupEventListeners() {
+            // Vendor dropdown change
+            vendorSelect.addEventListener("change", async () => {
+                activeVendorId = parseInt(vendorSelect.value);
+                await reloadVendorDetails();
+                showToast("Switched active vendor group.", "info");
+            });
+
+            // Show Select dropdown change
+            adminShowSelect.addEventListener("change", async () => {
+                const val = adminShowSelect.value;
+                if (!val) {
+                    currentShowId = null;
+                    adminSeatMapWrapper.classList.add("hidden");
+                    if (adminSocket) {
+                        adminSocket.close();
+                        adminSocket = null;
+                    }
+                    return;
+                }
+
+                currentShowId = parseInt(val);
+                adminSeatMapWrapper.classList.remove("hidden");
+                
+                // Establish connection
+                setupAdminWebsocket(currentShowId);
+                
+                // Load seats grid
+                await loadShowSeatingGrid(currentShowId);
+            });
+
+            // Block / Release override clicks
+            blockSeatsBtn.addEventListener("click", () => applyOverride("Booked"));
+            releaseSeatsBtn.addEventListener("click", () => applyOverride("Available"));
+
+            // Schedule Show Submit Form
+            schedulerForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                
+                const payload = {
+                    event_id: parseInt(eventSelect.value),
+                    venue_id: parseInt(venueSelect.value),
+                    start_time: new Date(document.getElementById("startTime").value).toISOString(),
+                    end_time: new Date(document.getElementById("endTime").value).toISOString(),
+                    base_price: parseFloat(document.getElementById("basePrice").value)
+                };
+
+                try {
+                    const res = await fetch("/api/admin/shows", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.ok) {
+                        showToast("Show successfully scheduled!", "success");
+                        schedulerForm.reset();
+                        // Reload vendor listings
+                        await reloadVendorDetails();
+                    } else {
+                        const err = await res.json();
+                        showToast(err.detail || "Failed to schedule show.", "error");
+                    }
+                } catch (err) {
+                    showToast("Server error scheduling show.", "error");
+                }
+            });
+
+            // Create Coupon Submit Form
+            couponForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                
+                const maxDiscVal = document.getElementById("maxDiscount").value;
+                const payload = {
+                    code: document.getElementById("couponCode").value.trim().toUpperCase(),
+                    discount_type: document.getElementById("discountType").value,
+                    discount_value: parseFloat(document.getElementById("discountValue").value),
+                    max_discount: maxDiscVal ? parseFloat(maxDiscVal) : null,
+                    expiry_date: new Date(document.getElementById("expiryDate").value).toISOString()
+                };
+
+                try {
+                    const res = await fetch("/api/admin/coupons", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.ok) {
+                        showToast("Campaign Coupon code registered!", "success");
+                        couponForm.reset();
+                        // Reload metrics to pull new structures if needed
+                        await loadAnalytics();
+                    } else {
+                        const err = await res.json();
+                        showToast(err.detail || "Failed to create coupon code.", "error");
+                    }
+                } catch (err) {
+                    showToast("Server error registering coupon.", "error");
+                }
+            });
+        }
+
+        // Notification utility
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            toast.className = `toast-node ${type}`;
+            
+            let icon = "fa-circle-check";
+            if (type === "error") icon = "fa-circle-xmark";
+            if (type === "warning") icon = "fa-triangle-exclamation";
+            if (type === "info") icon = "fa-circle-info";
+
+            toast.innerHTML = `
+                <i class="fa-solid ${icon}"></i>
+                <span class="toast-message">${message}</span>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add("fade-out");
+                setTimeout(() => toast.remove(), 500);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
